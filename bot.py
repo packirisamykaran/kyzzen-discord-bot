@@ -21,25 +21,32 @@ async def fetch_nft_data():
     }
 
 
-@tasks.loop(hours=1)  # Adjusted to update every hour
+@tasks.loop(hours=1)
 async def update_nft_data():
     for guild in bot.guilds:
         category = discord.utils.get(guild.categories, name="Kyzzen NFT Data")
         if category:
             nft_data = await fetch_nft_data()
 
+            # Assuming 'Total Listed' and 'Holders' channels exist
+            # Update channel names with the latest data
             total_listed_channel = discord.utils.get(
                 category.text_channels, name="total-listed")
             holders_channel = discord.utils.get(
                 category.text_channels, name="holders")
 
             if total_listed_channel:
-                await total_listed_channel.purge(limit=10)
-                await total_listed_channel.send(f"Total Listed: {nft_data['total_listed']}")
+                # Change the channel name to display the data
+                new_name = f"total-listed-{nft_data['total_listed']}"
+                await total_listed_channel.edit(name=new_name)
 
             if holders_channel:
-                await holders_channel.purge(limit=10)
-                await holders_channel.send(f"Holders: {nft_data['holders']}")
+                new_name = f"holders-{nft_data['holders']}"
+                await holders_channel.edit(name=new_name)
+
+            # Make channels read-only for @everyone role
+            # Note: This sets the permissions when you initially create the channels.
+            # If the channels already exist, you need to adjust their permissions separately.
 
 
 @bot.event
@@ -66,8 +73,15 @@ async def setup_nft_data(ctx):
         return
 
     category = await guild.create_category("Kyzzen NFT Data")
-    await guild.create_text_channel("Total Listed", category=category)
-    await guild.create_text_channel("Holders", category=category)
+
+    # Define read-only permissions for @everyone
+    overwrites = {
+        guild.default_role: discord.PermissionOverwrite(send_messages=False)
+    }
+
+    # Create channels with these overwrites
+    await guild.create_text_channel("Total Listed", category=category, overwrites=overwrites)
+    await guild.create_text_channel("Holders", category=category, overwrites=overwrites)
 
     await ctx.send("NFT data tracking setup complete!")
 
