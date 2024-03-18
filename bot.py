@@ -8,21 +8,29 @@ intents.guilds = True  # Ensure we have guild intents to manage channels
 intents.messages = True
 intents.message_content = True  # Ensure you enable message content intent
 
+
 # Initialize the bot with intents
 bot = commands.Bot(command_prefix='!', intents=intents)
 
 
+previous_total_listed = 100  # Initial placeholder value, adjust as needed
+previous_holders = 50
+
+
 async def fetch_nft_data():
+    global previous_total_listed, previous_holders
     # Placeholder for your data fetching logic
     # Return a dictionary with 'total_listed' and 'holders'
+
     return {
-        "total_listed": "100",  # Example data
-        "holders": "50",  # Example data
+        "total_listed": previous_total_listed+1,  # Example data
+        "holders": previous_holders+1,  # Example data
     }
 
 
-@tasks.loop(hours=1)
+@tasks.loop(minutes=1)
 async def update_nft_data():
+    global previous_total_listed, previous_holders
     for guild in bot.guilds:
         category = discord.utils.get(guild.categories, name="Kyzzen NFT Data")
         if category:
@@ -30,19 +38,24 @@ async def update_nft_data():
 
             # Assuming 'Total Listed' and 'Holders' channels exist
             # Update channel names with the latest data
-            total_listed_channel = discord.utils.get(
-                category.text_channels, name="total-listed")
-            holders_channel = discord.utils.get(
-                category.text_channels, name="holders")
+            # Fetch the new data
+            new_total_listed = nft_data['total_listed']
+            new_holders = nft_data['holders']
 
+            # Find channels by their previous names
+            total_listed_channel = discord.utils.get(
+                category.text_channels, name=f"total-listed-{previous_total_listed}")
+            holders_channel = discord.utils.get(
+                category.text_channels, name=f"holders-{previous_holders}")
+
+            # Update channels if they exist
             if total_listed_channel:
-                # Change the channel name to display the data
-                new_name = f"total-listed-{nft_data['total_listed']}"
-                await total_listed_channel.edit(name=new_name)
+                await total_listed_channel.edit(name=f"total-listed-{new_total_listed}")
+                previous_total_listed = new_total_listed  # Update the stored previous value
 
             if holders_channel:
-                new_name = f"holders-{nft_data['holders']}"
-                await holders_channel.edit(name=new_name)
+                await holders_channel.edit(name=f"holders-{new_holders}")
+                previous_holders = new_holders  # Update the stored previous value
 
             # Make channels read-only for @everyone role
             # Note: This sets the permissions when you initially create the channels.
@@ -80,8 +93,8 @@ async def setup_nft_data(ctx):
     }
 
     # Create channels with these overwrites
-    await guild.create_text_channel("Total Listed", category=category, overwrites=overwrites)
-    await guild.create_text_channel("Holders", category=category, overwrites=overwrites)
+    await guild.create_text_channel(f"total-listed-{previous_total_listed}", category=category, overwrites=overwrites)
+    await guild.create_text_channel(f"holders-{previous_holders}", category=category, overwrites=overwrites)
 
     await ctx.send("NFT data tracking setup complete!")
 
