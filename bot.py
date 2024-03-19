@@ -2,6 +2,11 @@ import discord
 from discord.ext import commands, tasks
 
 
+#  python3 -m venv bot_venv
+# pip install --upgrade certifi
+# export SSL_CERT_FILE=$(python3 -c "import certifi; print(certifi.where())")
+
+
 # Define intents
 intents = discord.Intents.default()
 intents.guilds = True  # Ensure we have guild intents to manage channels
@@ -69,6 +74,7 @@ async def on_ready():
         update_nft_data.start()
 
 
+@bot.c
 @bot.command(name='hi')
 async def hi(ctx):
     await ctx.send('Hi there!')
