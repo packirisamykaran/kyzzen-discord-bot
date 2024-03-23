@@ -1,25 +1,39 @@
 import json
+import requests
+
+
+async def fetch_board_data():
+
+    board_query = """
+    query MyQuery {
+        collections(id: "0e8e33630d554702a1619418269808b4") {
+        nodes {
+            floorPrice
+            averagePrice
+        }
+        }
+    }
+    """
+
+    result = fetch_graphql(board_query, "MyQuery")
+    stats = result['data']['collections']['nodes'][0]
+
+    return stats
 
 
 async def fetch_nft_data():
+    return
 
-    # Load data from data.json
-    with open('data.json', 'r') as f:
-        data = json.load(f)
 
-    total_listed = data["Total Listed"]
-    holders = data["Holders"]
+def fetch_graphql(operations_doc, operation_name, variables={}):
+    response = requests.post(
+        "https://v8lkzf4yd2.execute-api.us-east-2.amazonaws.com/go-gql",
+        json={
+            "query": operations_doc,
+            "variables": variables,
+            "operationName": operation_name
+        }
+    )
 
-    # Increment data by 2
-    data["Total Listed"] += 2
-    data["Holders"] += 2
-
-    # Save updated data back to data.json
-    with open('data.json', 'w') as f:
-        json.dump(data, f)
-
-    return {
-        'total_listed': total_listed,
-        'holders': holders
-
-    }
+    print(response.json())
+    return response.json()

@@ -1,111 +1,108 @@
-
-
 from discord.ext import commands, tasks
-from discord.utils import get
 import discord
-from data.board_data import fetch_nft_data
-from config import CATEGORY_NAME
+from data.board_data import fetch_board_data
+
+# Constants
+CATEGORY_NAME = "Kyzzen NFT Data"
+TOTAL_LISTED_CHANNEL_PREFIX = "total-listed-"
+HOLDERS_CHANNEL_PREFIX = "holders-"
+
+
+listOfChannels = ["Holders", "Floor Price", ]
 
 
 class Board(commands.Cog):
+    """Discord bot cog for managing NFT data boards."""
+
     def __init__(self, bot):
         self.bot = bot
+        self.total_listed = None
+        self.holders = None
 
     async def async_init(self):
-        nft_data = await fetch_nft_data()
-        self.total_listed = nft_data['total_listed']
-        self.holders = nft_data['holders']
-
-        print(f"Initialized total_listed: {self.total_listed}")
+        """Asynchronously initializes cog data."""
+        try:
+            nft_data = await fetch_nft_data()
+            self.total_listed = nft_data['total_listed']
+            self.holders = nft_data['holders']
+            print(f"Initialized total_listed: {self.total_listed}")
+        except Exception as e:
+            print(f"Error initializing Board cog: {e}")
 
     @commands.Cog.listener()
     async def on_ready(self):
+        """Event listener for when the bot is ready."""
         if not self.update_nft_data.is_running():
-            await self.async_init()  # Asynchronously initialize the needed data
-            self.update_nft_data.start()  # Then start your task loop
+            await self.async_init()
+            self.update_nft_data.start()
 
     @tasks.loop(minutes=10)
     async def update_nft_data(self):
+        """Task loop to update NFT data."""
         for guild in self.bot.guilds:
-            category = discord.utils.get(
-                guild.categories, name="Kyzzen NFT Data")
+            category = discord.utils.get(guild.categories, name=CATEGORY_NAME)
             if category:
-                nft_data = await fetch_nft_data()
+                try:
+                    board_data = await fetch_board_data()
 
-                # Assuming 'Total Listed' and 'Holders' channels exist
-                # Update channel names with the latest data
-                # Fetch the new data
-                new_total_listed = nft_data['total_listed']
-                new_holders = nft_data['holders']
+                    for channel in category.voice_channels:
+                        channel_name = channel.name.split(":")[0].strip()
+                        if channel_name in board_data:
+                            formatted_value = float(
+                                board_data[channel_name]) / 10**9
+                            await channel.edit(name=f"{channel_name}: {formatted_value:.2f}")
+                            print(
+                                f"Updated {channel_name} to {formatted_value:.2f}")
 
-                # Find channels by their previous names
-                total_listed_channel = discord.utils.get(
-                    category.voice_channels, name=f"total-listed-{self.total_listed}")
-                holders_channel = discord.utils.get(
-                    category.voice_channels, name=f"holders-{self.holders}")
-
-                print(f"new listed: {new_total_listed}")
-
-                # Update channels if they exist
-                if total_listed_channel:
-
-                    await total_listed_channel.edit(name=f"total-listed-{new_total_listed}")
-                    self.total_listed = new_total_listed
-
-                if holders_channel:
-                    await holders_channel.edit(name=f"holders-{new_holders}")
-                    self.holders = new_holders
-
-                # print(
-                #     f"Updating total-listed-{self.total_listed} to total-listed-{new_total_listed}")
+                except Exception as e:
+                    print(f"Error updating NFT data: {e}")
 
     @update_nft_data.before_loop
     async def before_update_nft_data(self):
+        """Ensures the bot is ready before starting the task loop."""
         await self.bot.wait_until_ready()
 
     @commands.command(name='board')
     @commands.has_permissions(manage_channels=True)
     async def setup_nft_data(self, ctx):
-        guild = ctx.guild
+        """Sets up voice channels for NFT data."""
 
-        existing_category = discord.utils.get(
-            guild.categories, name="Kyzzen NFT Data")
-        if existing_category:
-            await ctx.send("The 'Kyzzen NFT Data' category already exists!")
+        category = discord.utils.get(ctx.guild.categories, name=CATEGORY_NAME)
+        if category:
+            await ctx.send(f"The '{CATEGORY_NAME}' category already exists!")
             return
 
-        category = await guild.create_category("Kyzzen NFT Data")
+        try:
+            category = await ctx.guild.create_category(CATEGORY_NAME)
 
-        # Define read-only permissions for @everyone
-        overwrites = {
-            guild.default_role: discord.PermissionOverwrite(
-                connect=False,
-            )
-        }
+            overwrites = {
+                ctx.guild.default_role: discord.PermissionOverwrite(connect=False)}
 
-        # Create channels with these overwrites
-        await guild.create_voice_channel(f"total-listed-{self.total_listed}", category=category, overwrites=overwrites)
-        await guild.create_voice_channel(f"holders-{self.holders}", category=category, overwrites=overwrites)
+            stats = await fetch_board_data()
+
+            # Loop through the list of channels and create them
+            for channel_name, value in stats.items():
+                formatted_value = float(value) / 10**9
+                await ctx.guild.create_voice_channel(f"{channel_name}: {formatted_value:.2f}", category=category, overwrites=overwrites)
+
+        except Exception as e:
+            await ctx.send(f"Failed to setup NFT data channels: {e}")
 
     @commands.command(name='dl')
     @commands.has_permissions(manage_channels=True)
     async def delete_channels(self, ctx):
-        # Ensure the command is not executed in DMs
+        """Deletes all channels in the guild except for 'control'."""
         if ctx.guild is None:
             await ctx.send("This command can only be used in a server.")
             return
 
-        # Get a list of all text, voice channels, and categories
-        channels = ctx.guild.channels  # This includes both channels and categories
-
-        for channel in channels:
+        for channel in ctx.guild.channels:
             if channel.name == "control":
                 await ctx.send(f"Skipping {channel.name}")
                 continue
+
             try:
                 await channel.delete()
-                # Optional: Send a confirmation message for each deletion
-                # print(f"Deleted {channel.name}")
             except discord.Forbidden:
                 await ctx.send(f"I do not have permission to delete {channel.name}.")
             except discord.HTTPException as e:

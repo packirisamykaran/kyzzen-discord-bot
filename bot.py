@@ -1,33 +1,45 @@
 import discord
 from discord.ext import commands
-from dotenv import load_dotenv
 import os
-import asyncio
+from dotenv import load_dotenv
 
-
-# Load environment variables from .env file
+# Load environment variables
 load_dotenv()
 bot_key = os.getenv('BOT_KEY')
-# Congfigs
 
-# Define intents
+# Define discord intents for more granular control over events the bot listens to
 intents = discord.Intents.default()
 intents.guilds = True
 intents.messages = True
 intents.message_content = True
 
 
-# Initialize the bot with intents
-bot = commands.Bot(command_prefix='/', intents=intents)
+class KyzzenBot(commands.Bot):
+    def __init__(self, command_prefix, intents):
+        super().__init__(command_prefix=command_prefix, intents=intents)
 
-asyncio.run(bot.load_extension('cogs.board'))
-asyncio.run(bot.load_extension('cogs.message'))
+        # Load extensions (cogs) upon bot initialization
+        self.initial_extensions = ['cogs.board', 'cogs.message']
+
+    async def setup_hook(self):
+        # Load each extension from the list
+        for extension in self.initial_extensions:
+            try:
+                await self.load_extension(extension)
+            except commands.ExtensionError as e:
+                print(f'Failed to load extension {extension}: {e}')
+
+    async def on_ready(self):
+        # Notification that the bot is logged in and ready
+        print(f'Logged in as {self.user} (ID: {self.user.id})')
 
 
-@bot.event
-async def on_ready():
-    print(f'Logged in as {bot.user.name}')
+# Initialize bot instance
+bot = KyzzenBot(command_prefix='/', intents=intents)
 
-
+# Run the bot
 if __name__ == '__main__':
-    bot.run(bot_key)
+    try:
+        bot.run(bot_key)
+    except Exception as e:
+        print(f'Error encountered: {e}')
