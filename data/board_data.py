@@ -1,19 +1,24 @@
 import json
 import requests
+from config import CollectionID
 
 
 async def fetch_board_data():
 
-    board_query = """
-    query MyQuery {
-        collections(id: "0e8e33630d554702a1619418269808b4") {
-        nodes {
-            floorPrice
-            averagePrice
-        }
-        }
-    }
-    """
+    try:
+        board_query = f"""
+                query MyQuery {{
+                collections(id: "{CollectionID}") {{
+                    nodes {{
+                        floorPrice
+                        averagePrice
+                    }}
+                }}
+            }}
+            """
+    except Exception as e:
+        print(f"Error fetching board data: {e}")
+        return
 
     result = fetch_graphql(board_query, "MyQuery")
     stats = result['data']['collections']['nodes'][0]
@@ -36,4 +41,5 @@ def fetch_graphql(operations_doc, operation_name, variables={}):
     )
 
     print(response.json())
+
     return response.json()
