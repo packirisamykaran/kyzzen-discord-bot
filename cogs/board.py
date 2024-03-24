@@ -134,17 +134,28 @@ class Board(commands.Cog):
             await ctx.send("This command can only be used in a server.")
             return
 
-        for channel in ctx.guild.channels:
-            if channel.name == "control":
-                await ctx.send(f"Skipping {channel.name}")
-                continue
+        serverID = ctx.guild.id
 
-            try:
-                await channel.delete()
-            except discord.Forbidden:
-                await ctx.send(f"I do not have permission to delete {channel.name}.")
-            except discord.HTTPException as e:
-                await ctx.send(f"Failed to delete {channel.name}: {e}")
+        collection_server_config = get_collection_discord_data(serverID)
+
+        collection_board_config = collection_server_config['board']
+
+        if collection_server_config is None:
+            await ctx.send("This server does not have a collection configured.")
+            return
+
+        categoryName = collection_board_config['category_name']
+
+        category = discord.utils.get(ctx.guild.categories, name=categoryName)
+
+        if category is None:
+            await ctx.send(f"The '{categoryName}' category does not exist.")
+            return
+
+        for channel in category.voice_channels:
+            await channel.delete(reason="Cleaning up NFT data channels.")
+
+        await category.delete(reason="Cleaning up NFT data channels.")
 
         await ctx.send("All channels and categories have been deleted.")
 
