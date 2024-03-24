@@ -1,12 +1,7 @@
 from discord.ext import commands, tasks
 import discord
 from data.board_data import fetch_board_data
-
-# Constants
-CATEGORY_NAME = "Kyzzen 📊"
-
-
-listOfChannels = ["Holders", "Floor Price", ]
+from data.admin_database import get_collection_discord_data, statistic_channel_names
 
 
 class Board(commands.Cog):
@@ -67,14 +62,29 @@ class Board(commands.Cog):
         """Sets up voice channels for NFT data."""
 
         try:
+
+            serverID = ctx.guild.id
+
+            collection_server_config = get_collection_discord_data(serverID)
+
+            collection_board_config = collection_server_config['board']
+
+            if collection_server_config is None:
+                await ctx.send("This server does not have a collection configured.")
+                return
+
+            categoryName = collection_board_config['category_name']
+            channels = collection_board_config['channels']
+
             category = discord.utils.get(
-                ctx.guild.categories, name=CATEGORY_NAME)
+                ctx.guild.categories, name=categoryName)
             if category:
-                await ctx.send(f"The '{CATEGORY_NAME}' category already exists!")
+                await ctx.send(f"The '{categoryName}' category already exists!")
                 # No return here; proceed to update channels within this category
             else:
                 # Create the category if it doesn't exist
-                category = await ctx.guild.create_category(CATEGORY_NAME)
+                category = await ctx.guild.create_category(categoryName)
+                await ctx.send(f"Created the '{categoryName}' category.")
 
             overwrites = {
                 ctx.guild.default_role: discord.PermissionOverwrite(
@@ -83,20 +93,14 @@ class Board(commands.Cog):
 
             stats = await fetch_board_data()
 
-            # Loop through the stats to either update or create channels
-            for channel_name, value in stats.items():
-                formatted_value = float(value) / 10**9
-                channel_full_name = f"{channel_name}: {formatted_value:.2f}SOL"
+            for channel_name in channels:
+                formatted_value = float(stats[channel_name]) / 10**9
 
-                # Check if the channel already exists in this category
+                channel_full_name = f"{statistic_channel_names[channel_name]}: {formatted_value:.2f}SOL"
+
                 existing_channel = discord.utils.get(
                     category.channels, name=channel_full_name)
-                if existing_channel:
-                    # If the channel exists and needs to be updated
-                    # You might want to update other properties besides name here as well
-                    await existing_channel.edit(name=channel_full_name)
-                else:
-                    # If the channel does not exist, create it
+                if not existing_channel:
                     await ctx.guild.create_voice_channel(channel_full_name, category=category, overwrites=overwrites)
 
         except Exception as e:

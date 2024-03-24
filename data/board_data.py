@@ -39,7 +39,4 @@ def fetch_graphql(operations_doc, operation_name, variables={}):
             "operationName": operation_name
         }
     )
-
-    print(response.json())
-
     return response.json()
