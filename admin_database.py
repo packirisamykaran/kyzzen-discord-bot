@@ -5,7 +5,7 @@ collection_discord_data = {
         "collectionID": "0e8e33630d554702a1619418269808b4",
         "board": {
             "category_name": "Mad Lads Stats📊",
-            "channels": ["floorPrice", "averagePrice"]
+            "channels": ["averagePrice", "floorPrice"]
         },
         "commands": ["hi", "bye"]
     }
@@ -18,6 +18,11 @@ statistic_channel_names = {
     "floorPrice": "Floor Price",
     "averagePrice": "Average Price"
 }
+
+
+# reverse statistic_channel_names
+statistic_channel_names_reverse = {
+    v: k for k, v in statistic_channel_names.items()}
 
 
 def get_collection_discord_data(guild_id):

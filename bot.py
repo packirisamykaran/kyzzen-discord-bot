@@ -31,11 +31,12 @@ class KyzzenBot(commands.Bot):
 
     async def on_ready(self):
         # Notification that the bot is logged in and ready
-        print(f'\n\nLogged in as {self.user} (ID: {self.user.id})\n\n')
+        print(f'\nLogged in as {self.user} (ID: {self.user.id})\n')
 
 
 # Initialize bot instance
 bot = KyzzenBot(command_prefix='/', intents=intents)
+
 
 # Run the bot
 if __name__ == '__main__':

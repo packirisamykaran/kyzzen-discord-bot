@@ -1,7 +1,7 @@
 from discord.ext import commands, tasks
 import discord
 from data.board_data import fetch_board_data
-from data.admin_database import get_collection_discord_data, statistic_channel_names
+from admin_database import get_collection_discord_data, statistic_channel_names, statistic_channel_names_reverse
 
 
 class Board(commands.Cog):
@@ -17,24 +17,39 @@ class Board(commands.Cog):
 
             self.update_nft_data.start()
 
-    @tasks.loop(minutes=5)
+    @tasks.loop(minutes=6)
     async def update_nft_data(self):
         """Task loop to update NFT data."""
         for guild in self.bot.guilds:
-            category = discord.utils.get(guild.categories, name=CATEGORY_NAME)
+
+            serverID = guild.id
+
+            collection_server_config = get_collection_discord_data(serverID)
+
+            if collection_server_config is None:
+                await ctx.send("This server does not have a collection configured.")
+                return
+
+            collection_board_config = collection_server_config['board']
+            categoryName = collection_board_config['category_name']
+
+            category = discord.utils.get(guild.categories, name=categoryName)
+
             if category:
                 try:
                     board_data = await fetch_board_data()
                     existing_channel_names = {channel.name.split(
                         ":")[0].strip(): channel for channel in category.voice_channels}
 
-                    for data_name, value in board_data.items():
-                        formatted_value = float(value) / 10**9
-                        new_channel_name = f"{data_name}: {formatted_value:.2f}SOL"
+                    # for stats configured in conllection config
+                    for channel_name in collection_board_config['channels']:
+                        formatted_value = float(
+                            board_data[channel_name]) / 10**9
+                        new_channel_name = f"{statistic_channel_names[channel_name]}: {formatted_value:.2f}SOL"
 
-                        if data_name in existing_channel_names:
+                        if statistic_channel_names[channel_name] in existing_channel_names:
                             # Update existing channel
-                            await existing_channel_names[data_name].edit(name=new_channel_name)
+                            await existing_channel_names[statistic_channel_names[channel_name]].edit(name=new_channel_name)
                         else:
                             # Create a new channel as it does not exist
                             overwrites = {
@@ -45,9 +60,14 @@ class Board(commands.Cog):
 
                     # Optionally, remove channels that no longer exist in the board_data
                     for channel_name, channel in existing_channel_names.items():
-                        if channel_name not in board_data:
-                            await channel.delete(reason="Cleaning up unused NFT data channels.")
 
+                        if channel_name not in statistic_channel_names_reverse.keys():
+                            await channel.delete(reason="Cleaning up unused NFT data channels.")
+                            print("deleted")
+                            continue
+
+                        if statistic_channel_names_reverse[channel_name] not in collection_board_config['channels']:
+                            await channel.delete(reason="Cleaning up unused NFT data channels.")
                 except Exception as e:
                     print(f"Error updating NFT data: {e}")
 
@@ -130,4 +150,5 @@ class Board(commands.Cog):
 
 
 async def setup(bot):
+
     await bot.add_cog(Board(bot))
