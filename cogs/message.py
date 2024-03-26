@@ -1,4 +1,6 @@
 from discord.ext import commands
+from discord import app_commands
+import discord
 
 
 class MessageCommands(commands.Cog):
@@ -10,22 +12,19 @@ class MessageCommands(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
 
-    @commands.command(name='hi')
-    async def hi(self, ctx):
+    @app_commands.command()
+    async def hello(self, interaction: discord.Interaction):
         """
         Responds with a greeting message.
         """
-        await ctx.send('Hello!')
+        await interaction.response.send_message('Hello! How are you today?')
 
-    @commands.command(name='bye')
-    async def bye(self, ctx):
+    @app_commands.command()
+    async def bye(self, interaction: discord.Interaction):
         """
-        Responds with a farewell message.
+        Responds with a greeting message.
         """
-        await ctx.send('Goodbye!')
-
-    # Consider adding error handling within your commands to manage common issues,
-    # such as permissions errors, or to provide custom feedback for command-specific errors.
+        await interaction.response.send_message('Hebye')
 
 
 async def setup(bot):

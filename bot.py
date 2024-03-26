@@ -2,6 +2,7 @@ import discord
 from discord.ext import commands
 import os
 from dotenv import load_dotenv
+from discord import app_commands
 
 # Load environment variables
 load_dotenv()
@@ -18,6 +19,8 @@ class KyzzenBot(commands.Bot):
     def __init__(self, command_prefix, intents):
         super().__init__(command_prefix=command_prefix, intents=intents)
 
+        # Initialize the command tree for application commands
+
         # Load extensions (cogs) upon bot initialization
         self.initial_extensions = ['cogs.board', 'cogs.message']
 
@@ -26,8 +29,12 @@ class KyzzenBot(commands.Bot):
         for extension in self.initial_extensions:
             try:
                 await self.load_extension(extension)
+
+                # Sync the application commands with Discord
+
             except commands.ExtensionError as e:
                 print(f'Failed to load extension {extension}: {e}')
+        await self.tree.sync()
 
     async def on_ready(self):
         # Notification that the bot is logged in and ready
@@ -35,7 +42,7 @@ class KyzzenBot(commands.Bot):
 
 
 # Initialize bot instance
-bot = KyzzenBot(command_prefix='/', intents=intents)
+bot = KyzzenBot(command_prefix='.', intents=intents)
 
 
 # Run the bot

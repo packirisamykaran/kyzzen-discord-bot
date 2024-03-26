@@ -17,7 +17,7 @@ class Board(commands.Cog):
 
             self.update_nft_data.start()
 
-    @tasks.loop(minutes=6)
+    @tasks.loop(hours=2)
     async def update_nft_data(self):
         """Task loop to update NFT data."""
         for guild in self.bot.guilds:
