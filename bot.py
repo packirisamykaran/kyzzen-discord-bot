@@ -22,7 +22,8 @@ class KyzzenBot(commands.Bot):
         # Initialize the command tree for application commands
 
         # Load extensions (cogs) upon bot initialization
-        self.initial_extensions = ['cogs.board', 'cogs.message']
+        self.initial_extensions = [
+            'cogs.board', 'cogs.message', 'cogs.channel_listener', "cogs.commands"]
 
     async def setup_hook(self):
         # Load each extension from the list
@@ -42,7 +43,7 @@ class KyzzenBot(commands.Bot):
 
 
 # Initialize bot instance
-bot = KyzzenBot(command_prefix='.', intents=intents)
+bot = KyzzenBot(command_prefix='!', intents=intents)
 
 
 # Run the bot

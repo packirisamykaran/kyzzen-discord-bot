@@ -2,6 +2,7 @@ from discord.ext import commands, tasks
 import discord
 from data.board_data import fetch_board_data
 from admin_database import get_collection_discord_data, statistic_channel_names, statistic_channel_names_reverse
+from data.board_data import fetchFloorPrice
 
 
 class Board(commands.Cog):
@@ -144,9 +145,13 @@ class Board(commands.Cog):
             await ctx.send("This server does not have a collection configured.")
             return
 
-        categoryName = collection_board_config['category_name']
+        categoryID = collection_server_config['categoryID']
+        print(categoryID)
+        if categoryID is None:
+            await ctx.send("This server does not have a category configured.")
+            return
 
-        category = discord.utils.get(ctx.guild.categories, name=categoryName)
+        category = discord.utils.get(ctx.guild.categories, id=int(categoryID))
 
         if category is None:
             await ctx.send(f"The '{categoryName}' category does not exist.")
@@ -155,9 +160,7 @@ class Board(commands.Cog):
         for channel in category.voice_channels:
             await channel.delete(reason="Cleaning up NFT data channels.")
 
-        await category.delete(reason="Cleaning up NFT data channels.")
-
-        await ctx.send("All channels and categories have been deleted.")
+        await ctx.send("All channels cleared")
 
 
 async def setup(bot):

@@ -26,6 +26,13 @@ class MessageCommands(commands.Cog):
         """
         await interaction.response.send_message('Hebye')
 
+    @app_commands.command()
+    async def test(self, interaction: discord.Interaction):
+        """
+        Responds with a greeting message.
+        """
+        await interaction.response.send_message('testing my patience')
+
 
 async def setup(bot):
     """
