@@ -6,7 +6,10 @@ collection_discord_data = {
         "categoryID": "1222187918173540392",
         "board": {
             "category_name": "Mad Lads Stats📊",
-            "channels": ["averagePrice", "floorPrice"]
+            "channels": ["averagePrice", "floorPrice", "salesPast24h",
+                         "salesPast7d",
+                         "volumePast24h",
+                         "volumePast7d"]
         },
         "commands": ["hi", "bye"],
         "listeners": {
@@ -21,7 +24,11 @@ collection_discord_data = {
 
 statistic_channel_names = {
     "floorPrice": "Floor Price",
-    "averagePrice": "Average Price"
+    "averagePrice": "Average Price",
+    "salesPast24h": "Sales Past 24h",
+    "salesPast7d": "Sales Past 7d",
+    "volumePast24h": "Volume Past 24h",
+    "volumePast7d": "Volume Past 7d"
 }
 
 

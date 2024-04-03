@@ -1,8 +1,8 @@
 
 # This cog listens to messages in a channel and stores them in a database.
 
-from data.channel_data import store_message
-from discord.ext import commands
+from data.channel_data import store_message  # pylint: disable=import-error
+from discord.ext import commands  # pylint: disable=import-error
 
 
 class ChannelListener(commands.Cog):
@@ -18,8 +18,6 @@ class ChannelListener(commands.Cog):
         """
         Listen to channelID and store messages in a database.
         """
-
-        print(f"Message from {message.author}: {message.content}")
 
         # Check if the message is from the correct channel
         if message.channel.id == 1222544109261291712:

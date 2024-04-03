@@ -32,9 +32,16 @@ class Board(commands.Cog):
                 return
 
             collection_board_config = collection_server_config['board']
-            categoryName = collection_board_config['category_name']
+            if collection_board_config is None:
+                await print(f"This server does not have a board configured: {serverID}")
+                return
 
-            category = discord.utils.get(guild.categories, name=categoryName)
+            categoryID = collection_server_config['categoryID']
+            if categoryID is None:
+                await print(f"This server does not have a category configured: {serverID}")
+                return
+
+            category = discord.utils.get(guild.categories, id=int(categoryID))
 
             if category:
                 try:
@@ -69,6 +76,8 @@ class Board(commands.Cog):
 
                         if statistic_channel_names_reverse[channel_name] not in collection_board_config['channels']:
                             await channel.delete(reason="Cleaning up unused NFT data channels.")
+
+                    print("updated")
                 except Exception as e:
                     print(f"Error updating NFT data: {e}")
 
@@ -88,24 +97,29 @@ class Board(commands.Cog):
 
             collection_server_config = get_collection_discord_data(serverID)
 
-            collection_board_config = collection_server_config['board']
-
             if collection_server_config is None:
                 await ctx.send("This server does not have a collection configured.")
                 return
 
-            categoryName = collection_board_config['category_name']
+            collection_board_config = collection_server_config['board']
+
+            categoryID = collection_server_config['categoryID']
+            if categoryID is None:
+                await ctx.send("This server does not have a category configured.")
+                return
+
             channels = collection_board_config['channels']
+            # if channesl is [], return
+            if not channels:
+                await ctx.send("No channels configured for this collection.")
+                return
 
             category = discord.utils.get(
-                ctx.guild.categories, name=categoryName)
-            if category:
-                await ctx.send(f"The '{categoryName}' category already exists!")
-                # No return here; proceed to update channels within this category
-            else:
-                # Create the category if it doesn't exist
-                category = await ctx.guild.create_category(categoryName)
-                await ctx.send(f"Created the '{categoryName}' category.")
+                ctx.guild.categories, id=int(categoryID))
+
+            if category is None:
+                await ctx.send("Category not found.")
+                return
 
             overwrites = {
                 ctx.guild.default_role: discord.PermissionOverwrite(
@@ -139,23 +153,16 @@ class Board(commands.Cog):
 
         collection_server_config = get_collection_discord_data(serverID)
 
-        collection_board_config = collection_server_config['board']
-
         if collection_server_config is None:
             await ctx.send("This server does not have a collection configured.")
             return
 
         categoryID = collection_server_config['categoryID']
-        print(categoryID)
         if categoryID is None:
             await ctx.send("This server does not have a category configured.")
             return
 
         category = discord.utils.get(ctx.guild.categories, id=int(categoryID))
-
-        if category is None:
-            await ctx.send(f"The '{categoryName}' category does not exist.")
-            return
 
         for channel in category.voice_channels:
             await channel.delete(reason="Cleaning up NFT data channels.")
