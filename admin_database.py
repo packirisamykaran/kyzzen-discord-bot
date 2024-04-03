@@ -25,10 +25,10 @@ collection_discord_data = {
 statistic_channel_names = {
     "floorPrice": "Floor Price",
     "averagePrice": "Average Price",
-    "salesPast24h": "Sales Past 24h",
-    "salesPast7d": "Sales Past 7d",
-    "volumePast24h": "Volume Past 24h",
-    "volumePast7d": "Volume Past 7d"
+    "salesPast24h": "Sales 24h",
+    "salesPast7d": "Sales 7d",
+    "volumePast24h": "Vol 24h",
+    "volumePast7d": "Vol 7d"
 }
 
 

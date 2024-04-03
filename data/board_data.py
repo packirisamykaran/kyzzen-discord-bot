@@ -10,24 +10,25 @@ async def fetch_board_data():
                 query MyQuery {{
                 collections(id: "{CollectionID}") {{
                     nodes {{
-                        averagePrice
                         floorPrice
+                        averagePrice
                         salesPast24h
                         salesPast7d
                         volumePast24h
-                        volumePast7D
+                        volumePast7d
                     }}
                 }}
             }}
             """
+
+        result = fetch_graphql(board_query, "MyQuery")
+
+        stats = result['data']['collections']['nodes'][0]
+
+        return stats
     except Exception as e:
         print(f"Error fetching board data: {e}")
         return
-
-    result = fetch_graphql(board_query, "MyQuery")
-    stats = result['data']['collections']['nodes'][0]
-
-    return stats
 
 
 async def fetchFloorPrice():

@@ -1,5 +1,5 @@
-from discord.ext import commands, tasks
-import discord
+from discord.ext import commands, tasks  # pylint: disable=import-error
+import discord  # pylint: disable=import-error
 from data.board_data import fetch_board_data
 from admin_database import get_collection_discord_data, statistic_channel_names, statistic_channel_names_reverse
 from data.board_data import fetchFloorPrice
@@ -14,9 +14,9 @@ class Board(commands.Cog):
     @commands.Cog.listener()
     async def on_ready(self):
         """Event listener for when the bot is ready."""
-        if not self.update_nft_data.is_running():
+        if not self.update_nft_data.is_running():  # pylint: disable=no-member
 
-            self.update_nft_data.start()
+            self.update_nft_data.start()  # pylint: disable=no-member
 
     @tasks.loop(hours=2)
     async def update_nft_data(self):
@@ -51,9 +51,19 @@ class Board(commands.Cog):
 
                     # for stats configured in conllection config
                     for channel_name in collection_board_config['channels']:
-                        formatted_value = float(
-                            board_data[channel_name]) / 10**9
-                        new_channel_name = f"{statistic_channel_names[channel_name]}: {formatted_value:.2f}SOL"
+
+                        formatted_value = 0
+                        new_channel_name = ""
+
+                        if channel_name in ['salesPast7d', 'salesPast24h']:
+                            formatted_value = int(board_data[channel_name])
+                            new_channel_name = f"{statistic_channel_names[channel_name]}: {formatted_value}"
+
+                        else:
+
+                            formatted_value = float(
+                                board_data[channel_name]) / 10**9
+                            new_channel_name = f"{statistic_channel_names[channel_name]}: {formatted_value:.2f}SOL"
 
                         if statistic_channel_names[channel_name] in existing_channel_names:
                             # Update existing channel
@@ -129,9 +139,16 @@ class Board(commands.Cog):
             stats = await fetch_board_data()
 
             for channel_name in channels:
-                formatted_value = float(stats[channel_name]) / 10**9
 
-                channel_full_name = f"{statistic_channel_names[channel_name]}: {formatted_value:.2f}SOL"
+                channel_full_name = ""
+
+                if channel_name in ['salesPast7d', 'salesPast24h']:
+                    formatted_value = int(stats[channel_name])
+                    channel_full_name = f"{statistic_channel_names[channel_name]}: {formatted_value}"
+                else:
+                    formatted_value = float(stats[channel_name]) / 10**9
+
+                    channel_full_name = f"{statistic_channel_names[channel_name]}: {formatted_value:.2f} SOL"
 
                 existing_channel = discord.utils.get(
                     category.channels, name=channel_full_name)
