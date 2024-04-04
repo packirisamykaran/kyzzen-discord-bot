@@ -1,8 +1,9 @@
+# pylint: disable=import-error
 import discord
 from discord.ext import commands
 import os
 from dotenv import load_dotenv
-from discord import app_commands
+
 
 # Load environment variables
 load_dotenv()

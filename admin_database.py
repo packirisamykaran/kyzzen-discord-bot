@@ -6,10 +6,15 @@ collection_discord_data = {
         "categoryID": "1222187918173540392",
         "board": {
             "category_name": "Mad Lads Stats📊",
-            "channels": ["averagePrice", "floorPrice", "salesPast24h",
-                         "salesPast7d",
-                         "volumePast24h",
-                         "volumePast7d"]
+            "channels": [
+                        "listed",
+                        "totalOwners",
+                        "averagePrice",
+                        "floorPrice",
+                        "salesPast24h",
+                        "salesPast7d",
+                        "volumePast24h",
+                        "volumePast7d"]
         },
         "commands": ["hi", "bye"],
         "listeners": {
@@ -23,12 +28,33 @@ collection_discord_data = {
 
 
 statistic_channel_names = {
-    "floorPrice": "Floor Price",
-    "averagePrice": "Average Price",
+    "floorPrice": "Floor",
+    "averagePrice": "Average",
     "salesPast24h": "Sales 24h",
     "salesPast7d": "Sales 7d",
+    "salesPast30d": "Sales 30d",
+    "salesPast1h": "Sales 1h",
     "volumePast24h": "Vol 24h",
-    "volumePast7d": "Vol 7d"
+    "volumePast7d": "Vol 7d",
+    "volumePast30d": "Vol 30d",
+    "volumePast1h": "Vol 1h",
+    "volumeTotal": "Total Volume",
+    "volumeUsdPast24h": "USD Vol 24h",
+    "volumeUsdPast7d": "USD Vol 7d",
+    "volumeUsdPast30d": "USD Vol 30d",
+    "volumeUsdPast1h": "USD Vol 1h",
+    "volumePast7dDelta": "Vol 7d change",
+    "volumePast30dDelta": "Vol 30d change",
+    "volumePast24hDelta": "Vol 24h change",
+    "volumePast1hDelta": "Vol 1h change",
+    "totalOwners": "Total Owners",
+    "listed": "Listed",
+    "floorPricePast7dDelta": "Floor 7d change",
+    "floorPricePast30dDelta": "Floor 30d change",
+    "floorPricePast24hDelta": "Floor 24h change",
+    "floorPricePast1hDelta": "Floor 1h change",
+    "floorPriceDelta": "Floor change",
+    "averagePriceDelta": "Average change"
 }
 
 

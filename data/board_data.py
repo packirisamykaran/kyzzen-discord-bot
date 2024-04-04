@@ -10,6 +10,8 @@ async def fetch_board_data():
                 query MyQuery {{
                 collections(id: "{CollectionID}") {{
                     nodes {{
+                        totalOwners
+                        listed
                         floorPrice
                         averagePrice
                         salesPast24h
@@ -31,13 +33,13 @@ async def fetch_board_data():
         return
 
 
-async def fetchFloorPrice():
+async def fetchStats(collectionID, stat):
     try:
         board_query = f"""
                 query MyQuery {{
-                collections(id: "{CollectionID}") {{
+                collections(id: "{collectionID}") {{
                     nodes {{
-                        floorPrice
+                        {stat}
                     }}
                 }}
             }}
@@ -47,8 +49,8 @@ async def fetchFloorPrice():
         return
 
     result = fetch_graphql(board_query, "MyQuery")
-    stats = result['data']['collections']['nodes'][0]
-    return stats['floorPrice']
+    stat_result = result['data']['collections']['nodes'][0]
+    return stat_result[stat]
 
 
 def fetch_graphql(operations_doc, operation_name, variables={}):

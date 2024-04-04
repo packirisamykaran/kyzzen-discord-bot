@@ -1,3 +1,4 @@
+#  pylint: disable=import-error
 from discord.ext import commands
 from discord import app_commands
 import discord
@@ -14,6 +15,13 @@ class MessageCommands(commands.Cog):
 
     @app_commands.command()
     async def hello(self, interaction: discord.Interaction):
+        """
+        Responds with a greeting message.
+        """
+        await interaction.response.send_message('Hello! How are you today?')
+
+    @app_commands.command()
+    async def test2(self, interaction: discord.Interaction):
         """
         Responds with a greeting message.
         """
