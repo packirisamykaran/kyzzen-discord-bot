@@ -1,3 +1,4 @@
+# pylint: disable=import-error
 import json
 import requests
 from config import CollectionID
@@ -44,13 +45,15 @@ async def fetchStats(collectionID, stat):
                 }}
             }}
             """
+
     except Exception as e:
         print(f"Error fetching board data: {e}")
         return
 
     result = fetch_graphql(board_query, "MyQuery")
     stat_result = result['data']['collections']['nodes'][0]
-    return stat_result[stat]
+    print(stat_result[stat])
+    return format_data(stat, stat_result[stat])
 
 
 def fetch_graphql(operations_doc, operation_name, variables={}):
@@ -63,3 +66,53 @@ def fetch_graphql(operations_doc, operation_name, variables={}):
         }
     )
     return response.json()
+
+
+def format_data(stat, value):
+    sol_stats = ["floorPrice", "averagePrice", "volumePast24h",
+                 "volumePast7d", "volumePast30d", "volumePast1h", "volumeTotal"]
+    decimal_stats = ["volumePast7dDelta", "volumePast30dDelta", "volumePast24hDelta", "volumePast1hDelta", "floorPricePast7dDelta", "floorPricePast30dDelta",
+                     "floorPricePast24hDelta", "floorPricePast1hDelta", "floorPriceDelta", "averagePriceDelta", "volumeUsdPast24h", "volumeUsdPast7d", "volumeUsdPast30d", "volumeUsdPast1h"]
+
+    if stat in sol_stats and stat not in decimal_stats:
+        formatted_value = f"{float(value) / 10**9:.2f}"
+    elif stat in decimal_stats:
+        formatted_value = f"{float(value):.2f}"
+    else:
+        formatted_value = value  # No formatting for non-decimal or special cases
+
+    return formatted_value
+
+
+# query MyQuery {
+#   collections(id: "0e8e33630d554702a1619418269808b4") {
+#     nodes {
+#       averagePrice
+#       averagePriceDelta
+#       floorPrice
+#       floorPriceDelta
+#       floorPricePast7dDelta
+#       floorPricePast1hDelta
+#       floorPricePast24hDelta
+#       floorPricePast30dDelta
+#       salesPast1h
+#       salesPast24h
+#       salesPast30d
+#       salesPast7d
+#       totalOwners
+#       volumePast1h
+#       volumePast1hDelta
+#       volumePast24hDelta
+#       volumePast24h
+#       volumePast30d
+#       volumePast30dDelta
+#       volumePast7d
+#       volumePast7dDelta
+#       volumeTotal
+#       volumeUsdPast1h
+#       volumeUsdPast24h
+#       volumeUsdPast30d
+#       volumeUsdPast7d
+#     }
+#   }
+# }

@@ -20,26 +20,26 @@ class MessageCommands(commands.Cog):
         """
         await interaction.response.send_message('Hello! How are you today?')
 
-    @app_commands.command()
-    async def test2(self, interaction: discord.Interaction):
-        """
-        Responds with a greeting message.
-        """
-        await interaction.response.send_message('Hello! How are you today?')
+    # @app_commands.command()
+    # async def test2(self, interaction: discord.Interaction):
+    #     """
+    #     Responds with a greeting message.
+    #     """
+    #     await interaction.response.send_message('Hello! How are you today?')
 
-    @app_commands.command()
-    async def bye(self, interaction: discord.Interaction):
-        """
-        Responds with a greeting message.
-        """
-        await interaction.response.send_message('Hebye')
+    # @app_commands.command()
+    # async def bye(self, interaction: discord.Interaction):
+    #     """
+    #     Responds with a greeting message.
+    #     """
+    #     await interaction.response.send_message('Hebye')
 
-    @app_commands.command()
-    async def test(self, interaction: discord.Interaction):
-        """
-        Responds with a greeting message.
-        """
-        await interaction.response.send_message('testing my patience')
+    # @app_commands.command()
+    # async def test(self, interaction: discord.Interaction):
+    #     """
+    #     Responds with a greeting message.
+    #     """
+    #     await interaction.response.send_message('testing my patience')
 
 
 async def setup(bot):
