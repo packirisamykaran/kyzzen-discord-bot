@@ -1,32 +1,24 @@
 
 
-collection_discord_data = {
-    "1218457494226210826": {
-        "collectionID": "0e8e33630d554702a1619418269808b4",
-        "categoryID": "1222187918173540392",
-        "board": {
-            "category_name": "Mad Lads Stats📊",
-            "channels": [
-                "floorPrice",
-                "averagePrice",
-                "listed",
-                "volumePast24h",
-                "salesPast24h",
-                "volumePast7d",
-                "salesPast7d",
-                "totalOwners"
-            ],
-
-
-        },
-        "commands": ["hi", "bye"],
-        "listeners": {
-            "twitter": "1222544109261291712",
-
-        }
+collection_discord_config = {
+    "ServerID": "1218457494226210826",
+    "Counter": {
+        "CategoryID": "1222187918173540392",
+        "Channels": [
+            "floorPrice",
+            "averagePrice",
+            "listed",
+            "volumePast24h",
+            "salesPast24h",
+            "volumePast7d",
+            "salesPast7d",
+            "totalOwners"
+        ]
+    },
+    "CollectionID": "0e8e33630d554702a1619418269808b4",
+    "Listeners": {
+        "Twitter": "1222544109261291712"
     }
-
-
 }
 
 stats_commands = [
@@ -87,13 +79,13 @@ stats_commands = [
 ]
 
 stats_group_commands = {
-    "sales": {"description": "Get sales statistics", "stats": [
+    "stats-sales": {"description": "Get sales statistics", "stats": [
         "salesPast1h",
         "salesPast24h",
         "salesPast7d",
         "salesPast30d"
     ], "response": "Sales Statistics"},
-    "volume": {"description": "Get volume statistics", "stats": [
+    "stats-volume": {"description": "Get volume statistics", "stats": [
         "volumePast1h",
         "volumePast24h",
         "volumePast7d",
@@ -104,14 +96,14 @@ stats_group_commands = {
         "volumePast7dDelta",
         "volumePast30dDelta"
     ], "response": "Volume Statistics"},
-    "floor": {"description": "Get floor price statistics", "stats": [
+    "stats-floor-price": {"description": "Get floor price statistics", "stats": [
         "floorPrice",
         "floorPricePast1hDelta",
         "floorPricePast24hDelta",
         "floorPricePast7dDelta",
         "floorPricePast30dDelta"
     ], "response": "Floor Price Statistics"},
-    "volume-usd":  {"description": "Get volume statistics in USD", "stats": [
+    "stats-usd-volume":  {"description": "Get volume statistics in USD", "stats": [
         "volumeUsdPast1h",
         "volumeUsdPast24h",
         "volumeUsdPast7d",
@@ -160,5 +152,5 @@ statistic_channel_names_reverse = {
     v: k for k, v in statistic_channel_names.items()}
 
 
-def get_collection_discord_data(guild_id):
-    return collection_discord_data.get(str(guild_id), None)
+def get_collection_discord_config(guild_id):
+    return collection_discord_config

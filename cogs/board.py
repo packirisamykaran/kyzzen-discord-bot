@@ -1,7 +1,9 @@
+# pylint: disable=import-error
+
 import discord
 from discord.ext import commands, tasks
 from data.board_data import fetch_board_data
-from admin_database import get_collection_discord_data, statistic_channel_names, statistic_channel_names_reverse
+from bot_config import get_collection_discord_config, statistic_channel_names, statistic_channel_names_reverse
 
 
 class Board(commands.Cog):
@@ -9,11 +11,6 @@ class Board(commands.Cog):
 
     def __init__(self, bot):
         self.bot = bot
-        self.update_nft_data.start()  # Start the task when the cog is loaded
-
-    def cog_unload(self):
-        """Clean up resources when the cog is removed."""
-        self.update_nft_data.cancel()
 
     @commands.Cog.listener()
     async def on_ready(self):
@@ -23,7 +20,7 @@ class Board(commands.Cog):
     @tasks.loop(minutes=10)
     async def update_nft_data(self):
         """Task loop to update NFT data across all servers."""
-        print('updating NFT data for all servers')
+
         for guild in self.bot.guilds:
             await self.update_server_nft_data(guild)
 
@@ -38,22 +35,22 @@ class Board(commands.Cog):
         if not server_config:
             return
 
-        collection_id = server_config['collectionID']
+        collection_id = server_config['CollectionID']
 
         board_data = await fetch_board_data(collection_id)
         await self.manage_voice_channels(guild, server_config, board_data)
 
     async def get_server_config(self, guild_id):
         """Fetches server configuration for NFT board."""
-        config = get_collection_discord_data(guild_id)
-        if config and 'board' in config and 'categoryID' in config:
+        config = get_collection_discord_config(guild_id)
+        if config and 'Counter' in config and 'CollectionID' in config:
             return config
         print(f"Configuration incomplete or not found for server: {guild_id}")
         return None
 
     async def manage_voice_channels(self, guild, server_config, board_data):
         """Manages the creation and updating of voice channels for NFT data."""
-        category_id = int(server_config['categoryID'])
+        category_id = int(server_config['Counter']['CategoryID'])
         category = discord.utils.get(guild.categories, id=category_id)
         if not category:
             print(f"Category ID {category_id} not found in guild: {guild.id}")
@@ -61,7 +58,7 @@ class Board(commands.Cog):
 
         existing_channels = {ch.name.split(
             ":")[0].strip(): ch for ch in category.voice_channels}
-        configured_channels = server_config['board']['channels']
+        configured_channels = server_config['Counter']['Channels']
 
         await self.sync_channels(guild, category, board_data, existing_channels, configured_channels)
 
@@ -110,7 +107,7 @@ class Board(commands.Cog):
             return
 
         category = discord.utils.get(
-            ctx.guild.categories, id=int(server_config['categoryID']))
+            ctx.guild.categories, id=int(server_config['Counter']['CategoryID']))
         if category:
             for channel in category.voice_channels:
                 await channel.delete(reason="NFT data channel cleanup by command")
