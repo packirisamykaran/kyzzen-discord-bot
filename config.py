@@ -1,3 +1,0 @@
-CATEGORY_NAME = "Kyzzen Data"
-BOARD_DATA_FETCH_INTERVAL = 5  # in seconds
-CollectionID = "0e8e33630d554702a1619418269808b4"

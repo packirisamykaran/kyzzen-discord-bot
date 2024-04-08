@@ -86,6 +86,44 @@ stats_commands = [
         "symbol": "%", "response": "Overall Average Price Change"}
 ]
 
+stats_group_commands = {
+    "sales": {"description": "Get sales statistics", "stats": [
+        "salesPast1h",
+        "salesPast24h",
+        "salesPast7d",
+        "salesPast30d"
+    ], "response": "Sales Statistics"},
+    "volume": {"description": "Get volume statistics", "stats": [
+        "volumePast1h",
+        "volumePast24h",
+        "volumePast7d",
+        "volumePast30d",
+        "volumeTotal",
+        "volumePast1hDelta",
+        "volumePast24hDelta",
+        "volumePast7dDelta",
+        "volumePast30dDelta"
+    ], "response": "Volume Statistics"},
+    "floor": {"description": "Get floor price statistics", "stats": [
+        "floorPrice",
+        "floorPricePast1hDelta",
+        "floorPricePast24hDelta",
+        "floorPricePast7dDelta",
+        "floorPricePast30dDelta"
+    ], "response": "Floor Price Statistics"},
+    "volume-usd":  {"description": "Get volume statistics in USD", "stats": [
+        "volumeUsdPast1h",
+        "volumeUsdPast24h",
+        "volumeUsdPast7d",
+        "volumeUsdPast30d",
+        "volumePast1hDelta",
+        "volumePast24hDelta",
+        "volumePast7dDelta",
+        "volumePast30dDelta"
+    ], "response": "Volume Statistics in USD"}
+
+}
+
 statistic_channel_names = {
     "floorPrice": "Floor",
     "averagePrice": "Average",

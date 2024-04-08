@@ -1,87 +1,213 @@
+
 # pylint: disable=import-error
-import json
+
 import requests
-from config import CollectionID
+from typing import Optional, Dict, Any
 
 
-async def fetch_board_data():
-
-    try:
-        board_query = f"""
-                query MyQuery {{
-                collections(id: "{CollectionID}") {{
-                    nodes {{
-                        totalOwners
-                        listed
-                        floorPrice
-                        averagePrice
-                        salesPast24h
-                        salesPast7d
-                        volumePast24h
-                        volumePast7d
-                    }}
-                }}
-            }}
-            """
-
-        result = fetch_graphql(board_query, "MyQuery")
-
-        stats = result['data']['collections']['nodes'][0]
-
-        return stats
-    except Exception as e:
-        print(f"Error fetching board data: {e}")
-        return
+GRAPHQL_ENDPOINT = "https://v8lkzf4yd2.execute-api.us-east-2.amazonaws.com/go-gql"
 
 
-async def fetchStats(collectionID, stat):
-    try:
-        board_query = f"""
-                query MyQuery {{
-                collections(id: "{collectionID}") {{
-                    nodes {{
-                        {stat}
-                    }}
-                }}
-            }}
-            """
-
-    except Exception as e:
-        print(f"Error fetching board data: {e}")
-        return
-
-    result = fetch_graphql(board_query, "MyQuery")
-    stat_result = result['data']['collections']['nodes'][0]
-    print(stat_result[stat])
-    return format_data(stat, stat_result[stat])
-
-
-def fetch_graphql(operations_doc, operation_name, variables={}):
+def fetch_graphql(query: str, operation_name: str, variables: Optional[Dict[str, Any]] = None) -> Dict[str, Any]:
+    """Executes a GraphQL query and returns the JSON response."""
+    if variables is None:
+        variables = {}
     response = requests.post(
-        "https://v8lkzf4yd2.execute-api.us-east-2.amazonaws.com/go-gql",
-        json={
-            "query": operations_doc,
-            "variables": variables,
-            "operationName": operation_name
-        }
+        GRAPHQL_ENDPOINT,
+        json={"query": query, "variables": variables,
+              "operationName": operation_name}
     )
+    response.raise_for_status()  # Raises an HTTPError for bad responses
     return response.json()
 
 
-def format_data(stat, value):
-    sol_stats = ["floorPrice", "averagePrice", "volumePast24h",
-                 "volumePast7d", "volumePast30d", "volumePast1h", "volumeTotal"]
-    decimal_stats = ["volumePast7dDelta", "volumePast30dDelta", "volumePast24hDelta", "volumePast1hDelta", "floorPricePast7dDelta", "floorPricePast30dDelta",
-                     "floorPricePast24hDelta", "floorPricePast1hDelta", "floorPriceDelta", "averagePriceDelta", "volumeUsdPast24h", "volumeUsdPast7d", "volumeUsdPast30d", "volumeUsdPast1h"]
+def format_data(stat: str, value: Any) -> str:
+    """Formats data based on the stat type."""
+    sol_stats = {"floorPrice", "averagePrice", "volumePast24h",
+                 "volumePast7d", "volumePast30d", "volumePast1h", "volumeTotal"}
+    decimal_stats = {"volumePast7dDelta", "volumePast30dDelta", "volumePast24hDelta", "volumePast1hDelta", "floorPricePast7dDelta",
+                     "floorPricePast30dDelta", "floorPricePast24hDelta", "floorPricePast1hDelta", "floorPriceDelta", "averagePriceDelta",
+                     "volumeUsdPast24h", "volumeUsdPast7d", "volumeUsdPast30d", "volumeUsdPast1h"}
 
-    if stat in sol_stats and stat not in decimal_stats:
-        formatted_value = f"{float(value) / 10**9:.2f}"
+    if stat in sol_stats:
+        return f"{float(value) / 1e9:.2f}"
     elif stat in decimal_stats:
-        formatted_value = f"{float(value):.2f}"
-    else:
-        formatted_value = value  # No formatting for non-decimal or special cases
+        return f"{float(value):.2f}"
+    return str(value)  # Return as string for consistency
 
-    return formatted_value
+
+async def fetch_board_data(collection_id: str) -> Optional[Dict[str, Any]]:
+    """Fetches board data for the specified collection ID."""
+    query = f"""
+        query {{
+            collections(id: "{collection_id}") {{
+                nodes {{
+                    totalOwners
+                    listed
+                    floorPrice
+                    averagePrice
+                    salesPast24h
+                    salesPast7d
+                    volumePast24h
+                    volumePast7d
+                }}
+            }}
+        }}
+    """
+    try:
+        result = fetch_graphql(query, "MyQuery")
+        return result['data']['collections']['nodes'][0]
+    except requests.HTTPError as http_err:
+        print(f"HTTP error occurred: {http_err}")
+    except Exception as err:
+        print(f"An error occurred: {err}")
+    return None
+
+
+async def fetch_volume_data(collection_id: str) -> Optional[Dict[str, Any]]:
+    """Fetches board data for the specified collection ID."""
+    query = f"""
+        query {{
+            collections(id: "{collection_id}") {{
+                nodes {{
+                    volumePast1h
+                    volumePast24h
+                    volumePast7d
+                    volumePast30d
+                    volumeTotal
+                    volumePast1hDelta  
+                    volumePast24hDelta
+                    volumePast7dDelta
+                    volumePast30dDelta
+            
+                }}
+            }}
+        }}
+    """
+    try:
+        result = fetch_graphql(query, "MyQuery")
+        # loop and format the data
+        for key, value in result['data']['collections']['nodes'][0].items():
+            result['data']['collections']['nodes'][0][key] = format_data(
+                key, value)
+
+        return result['data']['collections']['nodes'][0]
+
+    except requests.HTTPError as http_err:
+        print(f"HTTP error occurred: {http_err}")
+    except Exception as err:
+        print(f"An error occurred: {err}")
+    return None
+
+
+async def fetch_sales_data(collection_id: str) -> Optional[Dict[str, Any]]:
+    """Fetches board data for the specified collection ID."""
+    query = f"""
+        query {{
+            collections(id: "{collection_id}") {{
+                nodes {{
+                    salesPast1h
+                    salesPast24h
+                    salesPast7d
+                    salesPast30d
+                }}
+            }}
+        }}
+    """
+    try:
+        result = fetch_graphql(query, "MyQuery")
+        return result['data']['collections']['nodes'][0]
+    except requests.HTTPError as http_err:
+        print(f"HTTP error occurred: {http_err}")
+    except Exception as err:
+        print(f"An error occurred: {err}")
+    return None
+
+
+async def fetch_volume_usd_data(collection_id: str) -> Optional[Dict[str, Any]]:
+    """Fetches board data for the specified collection ID."""
+    query = f"""
+        query {{
+            collections(id: "{collection_id}") {{
+                nodes {{
+                    volumeUsdPast1h
+                    volumeUsdPast24h
+                    volumeUsdPast7d
+                    volumeUsdPast30d
+                    volumePast1hDelta  
+                    volumePast24hDelta
+                    volumePast7dDelta
+                    volumePast30dDelta
+                }}
+            }}
+        }}
+    """
+    try:
+        result = fetch_graphql(query, "MyQuery")
+        # loop and format the data
+        for key, value in result['data']['collections']['nodes'][0].items():
+            result['data']['collections']['nodes'][0][key] = format_data(
+                key, value)
+
+        return result['data']['collections']['nodes'][0]
+
+    except requests.HTTPError as http_err:
+        print(f"HTTP error occurred: {http_err}")
+    except Exception as err:
+        print(f"An error occurred: {err}")
+    return None
+
+
+async def fetch_floor_price_data(collection_id: str) -> Optional[Dict[str, Any]]:
+    """Fetches board data for the specified collection ID."""
+    query = f"""
+        query {{
+            collections(id: "{collection_id}") {{
+                nodes {{
+                    floorPrice
+                    floorPricePast1hDelta
+                    floorPricePast24hDelta
+                    floorPricePast7dDelta
+                    floorPricePast30dDelta
+                }}
+            }}
+        }}
+    """
+    try:
+        result = fetch_graphql(query, "MyQuery")
+        # loop and format the data
+        for key, value in result['data']['collections']['nodes'][0].items():
+            result['data']['collections']['nodes'][0][key] = format_data(
+                key, value)
+
+        return result['data']['collections']['nodes'][0]
+    except requests.HTTPError as http_err:
+        print(f"HTTP error occurred: {http_err}")
+    except Exception as err:
+        print(f"An error occurred: {err}")
+    return None
+
+
+async def fetch_stats(collection_id: str, stat: str) -> Optional[str]:
+    """Fetches a specific stat for the specified collection ID."""
+    query = f"""
+        query {{
+            collections(id: "{collection_id}") {{
+                nodes {{
+                    {stat}
+                }}
+            }}
+        }}
+    """
+    try:
+        result = fetch_graphql(query, "MyQuery")
+        stat_result = result['data']['collections']['nodes'][0]
+        return format_data(stat, stat_result[stat])
+    except requests.HTTPError as http_err:
+        print(f"HTTP error occurred: {http_err}")
+    except Exception as err:
+        print(f"An error occurred: {err}")
+    return None
 
 
 # query MyQuery {

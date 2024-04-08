@@ -20,9 +20,10 @@ class Board(commands.Cog):
         """Event listener for when the bot is ready."""
         print("Board cog is ready and running.")
 
-    @tasks.loop(hours=2)
+    @tasks.loop(minutes=10)
     async def update_nft_data(self):
         """Task loop to update NFT data across all servers."""
+        print('updating NFT data for all servers')
         for guild in self.bot.guilds:
             await self.update_server_nft_data(guild)
 
@@ -37,7 +38,9 @@ class Board(commands.Cog):
         if not server_config:
             return
 
-        board_data = await fetch_board_data()
+        collection_id = server_config['collectionID']
+
+        board_data = await fetch_board_data(collection_id)
         await self.manage_voice_channels(guild, server_config, board_data)
 
     async def get_server_config(self, guild_id):

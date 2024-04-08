@@ -1,4 +1,5 @@
 # pylint: disable=import-error
+# pylint: disable=redefined-outer-name
 import discord
 from discord.ext import commands
 import os
@@ -24,7 +25,7 @@ class KyzzenBot(commands.Bot):
 
         # Load extensions (cogs) upon bot initialization
         self.initial_extensions = [
-            'cogs.board', 'cogs.message', 'cogs.channel_listener', "cogs.commands"]
+            'cogs.board', "cogs.commands"]
 
     async def setup_hook(self):
         # Load each extension from the list
