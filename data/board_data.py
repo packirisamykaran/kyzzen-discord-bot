@@ -3,6 +3,7 @@
 
 import requests
 from typing import Optional, Dict, Any
+import aiohttp
 
 
 GRAPHQL_ENDPOINT = "https://v8lkzf4yd2.execute-api.us-east-2.amazonaws.com/go-gql"
@@ -27,7 +28,7 @@ def format_data(stat: str, value: Any) -> str:
                  "volumePast7d", "volumePast30d", "volumePast1h", "volumeTotal"}
     decimal_stats = {"volumePast7dDelta", "volumePast30dDelta", "volumePast24hDelta", "volumePast1hDelta", "floorPricePast7dDelta",
                      "floorPricePast30dDelta", "floorPricePast24hDelta", "floorPricePast1hDelta", "floorPriceDelta", "averagePriceDelta",
-                     "volumeUsdPast24h", "volumeUsdPast7d", "volumeUsdPast30d", "volumeUsdPast1h"}
+                     "volumeUsdPast24h", "volumeUsdPast7d", "volumeUsdPast30d", "volumeUsdPast1h", "SOL"}
 
     if stat in sol_stats:
         return f"{float(value) / 1e9:.2f}"
@@ -56,6 +57,21 @@ async def fetch_board_data(collection_id: str) -> Optional[Dict[str, Any]]:
     """
     try:
         result = fetch_graphql(query, "MyQuery")
+
+        # add sol price
+        sol_price = await get_sol_USD_price()
+
+        result['data']['collections']['nodes'][0]['SOL'] = format_data(
+            "SOL", sol_price)
+
+        # add tps
+        tps = 0
+        # async with aiohttp.ClientSession() as session:
+        #     async with session.get("https://api.mainnet-beta.solana.com/tps") as response:
+        #         if response.status == 200:
+        #             tps = await response.json()  # This gets the JSON content of the response
+        result['data']['collections']['nodes'][0]['TPS'] = tps
+
         return result['data']['collections']['nodes'][0]
     except requests.HTTPError as http_err:
         print(f"HTTP error occurred: {http_err}")
@@ -75,11 +91,11 @@ async def fetch_volume_data(collection_id: str) -> Optional[Dict[str, Any]]:
                     volumePast7d
                     volumePast30d
                     volumeTotal
-                    volumePast1hDelta  
+                    volumePast1hDelta
                     volumePast24hDelta
                     volumePast7dDelta
                     volumePast30dDelta
-            
+
                 }}
             }}
         }}
@@ -98,6 +114,15 @@ async def fetch_volume_data(collection_id: str) -> Optional[Dict[str, Any]]:
     except Exception as err:
         print(f"An error occurred: {err}")
     return None
+
+
+async def get_sol_USD_price():
+    sol_price = 0
+    async with aiohttp.ClientSession() as session:
+        async with session.get("https://price.jup.ag/v4/price?ids=SOL&vsToken=USDC") as response:
+            if response.status == 200:
+                sol_price = await response.json()  # This gets the JSON content of the response
+    return sol_price['data']['SOL']['price']
 
 
 async def fetch_sales_data(collection_id: str) -> Optional[Dict[str, Any]]:
@@ -134,7 +159,7 @@ async def fetch_volume_usd_data(collection_id: str) -> Optional[Dict[str, Any]]:
                     volumeUsdPast24h
                     volumeUsdPast7d
                     volumeUsdPast30d
-                    volumePast1hDelta  
+                    volumePast1hDelta
                     volumePast24hDelta
                     volumePast7dDelta
                     volumePast30dDelta

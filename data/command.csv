@@ -1,0 +1,28 @@
+name,stat,description,symbol,response
+floor-price,floorPrice,Get the current floor price,SOL,Floor Price
+average-price,averagePrice,Get the average price,SOL,Average Price
+sales-24h,salesPast24h,Get sales in the past 24 hours,,Sales 24H
+sales-7d,salesPast7d,Get sales in the past 7 days,,Sales 7D
+sales-30d,salesPast30d,Get sales in the past 30 days,,Sales 30D
+sales-1h,salesPast1h,Get sales in the past hour,,Sales 1H
+vol-24h,volumePast24h,Get volume in the past 24 hours,SOL,Volume 24H
+vol-7d,volumePast7d,Get volume in the past 7 days,SOL,Volume 7D
+vol-30d,volumePast30d,Get volume in the past 30 days,SOL,Volume 30D
+vol-1h,volumePast1h,Get volume in the past hour,SOL,Volume 1H
+total-volume,volumeTotal,Get total volume,SOL,Total Volume
+usd-vol-24h,volumeUsdPast24h,Get USD volume in the past 24 hours,$USD,USD Volume 24H
+usd-vol-7d,volumeUsdPast7d,Get USD volume in the past 7 days,$USD,USD Volume 7D
+usd-vol-30d,volumeUsdPast30d,Get USD volume in the past 30 days,$USD,USD Volume 30D
+usd-vol-1h,volumeUsdPast1h,Get USD volume in the past hour,$USD,USD Volume 1H
+vol-7d-change,volumePast7dDelta,Get volume change in the past 7 days,%,Volume 7D Change
+vol-30d-change,volumePast30dDelta,Get volume change in the past 30 days,%,Volume 30D Change
+vol-24h-change,volumePast24hDelta,Get volume change in the past 24 hours,%,Volume 24H Change
+vol-1h-change,volumePast1hDelta,Get volume change in the past hour,%,Volume 1H Change
+total-owners,totalOwners,Get total number of owners,,Total Owners
+listed,listed,Get number of listed NFTs,,Listed NFTs
+floor-7d-change,floorPricePast7dDelta,Get floor price change in the past 7 days,%,Floor Price 7D Change
+floor-30d-change,floorPricePast30dDelta,Get floor price change in the past 30 days,%,Floor Price 30D Change
+floor-24h-change,floorPricePast24hDelta,Get floor price change in the past 24 hours,%,Floor Price 24H Change
+floor-1h-change,floorPricePast1hDelta,Get floor price change in the past hour,%,Floor Price 1H Change
+floor-change,floorPriceDelta,Get overall floor price change,%,Overall Floor Price Change
+average-change,averagePriceDelta,Get overall average price change,%,Overall Average Price Change

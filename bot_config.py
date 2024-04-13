@@ -12,7 +12,9 @@ collection_discord_config = {
             "salesPast24h",
             "volumePast7d",
             "salesPast7d",
-            "totalOwners"
+            "totalOwners",
+            "SOL",
+            "TPS",
         ]
     },
     "CollectionID": "0e8e33630d554702a1619418269808b4",
@@ -20,6 +22,10 @@ collection_discord_config = {
         "Twitter": "1222544109261291712"
     }
 }
+
+
+# arrange channel
+
 
 stats_commands = [
     {"name": "floor-price", "stat": "floorPrice", "description": "Get the current floor price",
@@ -143,7 +149,9 @@ statistic_channel_names = {
     "floorPricePast24hDelta": "Floor 24h change",
     "floorPricePast1hDelta": "Floor 1h change",
     "floorPriceDelta": "Floor change",
-    "averagePriceDelta": "Average change"
+    "averagePriceDelta": "Average change",
+    "SOL": "SOL",
+    "TPS": "TPS"
 }
 
 
