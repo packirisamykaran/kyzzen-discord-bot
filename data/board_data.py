@@ -53,26 +53,23 @@ async def fetch_board_data(collection_id: str) -> Optional[Dict[str, Any]]:
                     volumePast7d
                 }}
             }}
+            metrics {{
+            nodes {{
+                tps
+                solUSD
+                }}
+            }}
         }}
     """
     try:
         result = fetch_graphql(query, "MyQuery")
 
-        # add sol price
-        sol_price = await get_sol_USD_price()
+        stats = result['data']['collections']['nodes'][0]
 
-        result['data']['collections']['nodes'][0]['SOL'] = format_data(
-            "SOL", sol_price)
+        stats["TPS"] = result['data']['metrics']['nodes'][0]['tps']
+        stats["SOL"] = result['data']['metrics']['nodes'][0]['solUSD']
 
-        # add tps
-        tps = 0
-        # async with aiohttp.ClientSession() as session:
-        #     async with session.get("https://api.mainnet-beta.solana.com/tps") as response:
-        #         if response.status == 200:
-        #             tps = await response.json()  # This gets the JSON content of the response
-        result['data']['collections']['nodes'][0]['TPS'] = tps
-
-        return result['data']['collections']['nodes'][0]
+        return stats
     except requests.HTTPError as http_err:
         print(f"HTTP error occurred: {http_err}")
     except Exception as err:
@@ -95,6 +92,10 @@ async def fetch_volume_data(collection_id: str) -> Optional[Dict[str, Any]]:
                     volumePast24hDelta
                     volumePast7dDelta
                     volumePast30dDelta
+                    volumeUsdPast1h
+                    volumeUsdPast24h
+                    volumeUsdPast7d
+                    volumeUsdPast30d
 
                 }}
             }}
@@ -149,40 +150,6 @@ async def fetch_sales_data(collection_id: str) -> Optional[Dict[str, Any]]:
     return None
 
 
-async def fetch_volume_usd_data(collection_id: str) -> Optional[Dict[str, Any]]:
-    """Fetches board data for the specified collection ID."""
-    query = f"""
-        query {{
-            collections(id: "{collection_id}") {{
-                nodes {{
-                    volumeUsdPast1h
-                    volumeUsdPast24h
-                    volumeUsdPast7d
-                    volumeUsdPast30d
-                    volumePast1hDelta
-                    volumePast24hDelta
-                    volumePast7dDelta
-                    volumePast30dDelta
-                }}
-            }}
-        }}
-    """
-    try:
-        result = fetch_graphql(query, "MyQuery")
-        # loop and format the data
-        for key, value in result['data']['collections']['nodes'][0].items():
-            result['data']['collections']['nodes'][0][key] = format_data(
-                key, value)
-
-        return result['data']['collections']['nodes'][0]
-
-    except requests.HTTPError as http_err:
-        print(f"HTTP error occurred: {http_err}")
-    except Exception as err:
-        print(f"An error occurred: {err}")
-    return None
-
-
 async def fetch_floor_price_data(collection_id: str) -> Optional[Dict[str, Any]]:
     """Fetches board data for the specified collection ID."""
     query = f"""
@@ -213,21 +180,77 @@ async def fetch_floor_price_data(collection_id: str) -> Optional[Dict[str, Any]]
     return None
 
 
-async def fetch_stats(collection_id: str, stat: str) -> Optional[str]:
-    """Fetches a specific stat for the specified collection ID."""
+async def fetch_raffles(collection_id: str) -> Optional[Dict[str, Any]]:
+    """Fetches board data for the specified collection ID."""
     query = f"""
         query {{
-            collections(id: "{collection_id}") {{
+            raffle(collectionId: "{collection_id}") {{
                 nodes {{
-                    {stat}
+                    creators
+                    howRareRank
+                    name
+                    moonrankRank
+                    endDate
+                    price
+                    supply
+                    sold
+                    link
+                    createdAt
+                    source
                 }}
             }}
         }}
     """
+
     try:
         result = fetch_graphql(query, "MyQuery")
-        stat_result = result['data']['collections']['nodes'][0]
-        return format_data(stat, stat_result[stat])
+        print(result)
+        return result['data']['raffle']['nodes']
+    except requests.HTTPError as http_err:
+        print(f"HTTP error occurred: {http_err}")
+
+
+async def fetch_loan_offers(collection_name: str) -> Optional[Dict[str, Any]]:
+    """Fetches loan offers for the specified collection name."""
+    query = f"""
+        query {{
+            lendingPools(collectionName: "{collection_name}") {{
+                nodes {{
+                    id
+                    collectionName
+                    collectionKey
+                    lowestOffer
+                    availableLiquidity
+                    depositYieldApy
+                    duration
+                    highestOffer
+                    interestRate
+                    lastLoan
+                    ltv
+                    marketplace
+                    minInterestRate
+                    minYieldApy
+                    thumbnailUrl
+                    totalLiquidity
+                }}
+            }}
+        }}
+    """
+
+    try:
+        result = fetch_graphql(query, "MyQuery")
+        list_of_loans = result['data']['lendingPools']['nodes']
+
+        # iterate and return the data which contains the highest offer out of the list of loans
+        highest_offer = 0
+        highest_offer_loan = None
+        for loan in list_of_loans:
+            if loan['highestOffer'] > highest_offer:
+                highest_offer = loan['highestOffer']
+                highest_offer_loan = loan
+
+        return highest_offer_loan
+
     except requests.HTTPError as http_err:
         print(f"HTTP error occurred: {http_err}")
     except Exception as err:

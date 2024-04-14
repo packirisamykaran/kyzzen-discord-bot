@@ -22,8 +22,9 @@ class Board(commands.Cog):
     @commands.Cog.listener()
     async def on_ready(self):
         """Event listener for when the bot is ready."""
-        self.update_nft_data.start()  # pylint: disable=no-member
-        print("Board cog is ready and running.")
+        if not self.update_nft_data.is_running():  # pylint: disable=no-member
+
+            self.update_nft_data.start()  # pylint: disable=no-member
 
         #
     #

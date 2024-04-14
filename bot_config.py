@@ -20,7 +20,8 @@ collection_discord_config = {
     "CollectionID": "0e8e33630d554702a1619418269808b4",
     "Listeners": {
         "Twitter": "1222544109261291712"
-    }
+    },
+    "Loan_name": "Mad Lads"
 }
 
 

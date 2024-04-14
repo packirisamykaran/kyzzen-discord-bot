@@ -25,7 +25,7 @@ class KyzzenBot(commands.Bot):
 
         # Load extensions (cogs) upon bot initialization
         self.initial_extensions = [
-            'cogs.board', "cogs.commands"]
+            'cogs.board', "cogs.floor", "cogs.sales", "cogs.volume", "cogs.raffles"]
 
     async def setup_hook(self):
         # Load each extension from the list

@@ -3,17 +3,16 @@ from discord.ext import commands
 from discord import app_commands
 import discord
 import aiohttp
-from bot_config import stats_commands
-from data.board_data import fetch_stats, fetch_sales_data, fetch_volume_data, fetch_volume_usd_data, fetch_floor_price_data
+from data.board_data import fetch_floor_price_data
 from bot_config import stats_group_commands, get_collection_discord_config
 from data.board_data import get_sol_USD_price
 
 
-class StatsCommands(commands.Cog):
+class Floor(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
         # Dynamically add commands after initializing the cog
-        self.dynamic_commands = stats_commands
+        # self.dynamic_commands = stats_commands
 
         # self.add_dynamic_commands()
 
@@ -25,23 +24,39 @@ class StatsCommands(commands.Cog):
         collection_config = get_collection_discord_config(guild_id)
         collection_id = collection_config["CollectionID"]
         floor_price_stats = await fetch_floor_price_data(collection_id)
-
         sol_price = await get_sol_USD_price()
 
         floor_price = float(floor_price_stats['floorPrice'])
+        deltas = {
+            '1hr': float(floor_price_stats['floorPricePast1hDelta']),
+            '24hr': float(floor_price_stats['floorPricePast24hDelta']),
+            '7d': float(floor_price_stats['floorPricePast7dDelta']),
+            # '30d': float(floor_price_stats['floorPricePast30dDelta'])
+        }
 
-        usd_value = float(floor_price_stats['floorPrice']) * float(sol_price)
+        # Calculate and format floor price and changes
+        message = await self.calculate_and_format_changes(floor_price, deltas, sol_price)
+        await interaction.followup.send(message)
+
+    async def calculate_and_format_changes(self, floor_price, deltas, sol_price):
+        usd_value = floor_price * sol_price
         formatted_usd_value = await self.format_values(usd_value)
+        current = f"🏷️ Floor Price: {floor_price:.2f} SOL | ${formatted_usd_value} USD\n"
 
-        current = f"Floor Price: {floor_price_stats['floorPrice']} SOL / {formatted_usd_value} USD"
+        changes = "\n📉 Price Changes: \n"
+        icons = {'1hr': '⏳', '24hr': '🕛', '7d': '🗓️', '30d': '🔄'}
+        for period, delta in deltas.items():
+            sol_change = floor_price / (1 + delta / 100)
+            usd_change = sol_change * sol_price
+            formatted_sol_change = await self.format_values(sol_change)
+            formatted_usd_change = await self.format_values(usd_change)
+            trend = "~" if delta == 0 else (
+                f"🔻{-delta}%" if delta < 0 else f"🔺{delta}%")
+            changes += f"{icons[period]} {period.upper()}: {formatted_sol_change} SOL | ${formatted_usd_change} USD ({trend})\n"
 
-        delta1hr = float(floor_price_stats['floorPricePast1hDelta'])
-        change_1hr = f"1H ago: { } {floor_price_stats['floorPricePast1hDelta']}%"
-
-        await interaction.followup.send(f"{current}\nFloor Price 1H Change: {floor_price_stats['floorPricePast1hDelta']}%\nFloor Price 24H Change: {floor_price_stats['floorPricePast24hDelta']}%\nFloor Price 7D Change: {floor_price_stats['floorPricePast7dDelta']}%\nFloor Price 30D Change: {floor_price_stats['floorPricePast30dDelta']}%")
+        return current + changes
 
     async def format_values(self, value):
-
         num_value = float(value)
         if num_value >= 1000:
             num_value /= 1000
@@ -84,7 +99,7 @@ class StatsCommands(commands.Cog):
 
 
 async def setup(bot):
-    await bot.add_cog(StatsCommands(bot))
+    await bot.add_cog(Floor(bot))
 
 
 # def add_dynamic_commands(self):
