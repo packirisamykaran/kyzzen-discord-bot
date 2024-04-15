@@ -20,11 +20,11 @@ class Sales(commands.Cog):
 
         sales_data = await fetch_sales_data(collection_id)
         if sales_data:
-            message = "**Sales Activity:**\n"
-            message += f"⏳ Hour: {sales_data['salesPast1h']}\n"
-            message += f"🕛 24 Hours: {sales_data['salesPast24h']}\n"
-            message += f"📅 Week: {sales_data['salesPast7d']}\n"
-            message += f"🗓️ Month: {sales_data['salesPast30d']}\n"
+            message = "**No. of New Sales:**\n"
+            message += f"- Past 1H: {sales_data['salesPast1h']}\n"
+            message += f"- Past 24H: {sales_data['salesPast24h']}\n"
+            message += f"- Past 7D: {sales_data['salesPast7d']}\n"
+            message += f"- Past 30D: {sales_data['salesPast30d']}\n"
             await interaction.followup.send(message)
 
 

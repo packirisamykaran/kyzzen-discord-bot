@@ -204,7 +204,7 @@ async def fetch_raffles(collection_id: str) -> Optional[Dict[str, Any]]:
 
     try:
         result = fetch_graphql(query, "MyQuery")
-        print(result)
+
         return result['data']['raffle']['nodes']
     except requests.HTTPError as http_err:
         print(f"HTTP error occurred: {http_err}")

@@ -144,10 +144,14 @@ class Board(commands.Cog):
         value = board_data[channel_name]
         formatted_name = statistic_channel_names[channel_name]
         if channel_name in ['salesPast7d', 'salesPast24h', 'listed', 'totalOwners', "TPS"]:
+
             return f"{formatted_name}: {int(value)}"
         if channel_name in ["SOL"]:
             return f"{formatted_name}: {float(value):.2f} USD"
 
+        if (float(value) > float(10**12)):
+            print(float(value) / 10**9)
+            return f"{formatted_name}: {(float(value)/10**9) / 1000:.1f}K SOL"
         return f"{formatted_name}: {float(value) / 10**9:.2f} SOL"
 
     #

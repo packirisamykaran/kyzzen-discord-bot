@@ -41,18 +41,18 @@ class Floor(commands.Cog):
     async def calculate_and_format_changes(self, floor_price, deltas, sol_price):
         usd_value = floor_price * sol_price
         formatted_usd_value = await self.format_values(usd_value)
-        current = f"🏷️ Floor Price: {floor_price:.2f} SOL | ${formatted_usd_value} USD\n"
+        current = f"**Current Floor Price:** {floor_price:.2f} SOL / ${formatted_usd_value} USD\n"
 
-        changes = "\n📉 Price Changes: \n"
-        icons = {'1hr': '⏳', '24hr': '🕛', '7d': '🗓️', '30d': '🔄'}
+        changes = ""
+        icons = {'1h': '⏳', '24h': '🕛', '7d': '🗓️', '30d': '🔄'}
         for period, delta in deltas.items():
             sol_change = floor_price / (1 + delta / 100)
             usd_change = sol_change * sol_price
             formatted_sol_change = await self.format_values(sol_change)
             formatted_usd_change = await self.format_values(usd_change)
-            trend = "~" if delta == 0 else (
-                f"🔻{-delta}%" if delta < 0 else f"🔺{delta}%")
-            changes += f"{icons[period]} {period.upper()}: {formatted_sol_change} SOL | ${formatted_usd_change} USD ({trend})\n"
+            trend = " ~ 0%" if delta == 0 else (
+                f"🔻{-delta}%" if delta < 0 else f" ⬆️ {delta}%")
+            changes += f"- {period.upper()} ago: {formatted_sol_change} SOL ({trend})\n"
 
         return current + changes
 

@@ -47,15 +47,15 @@ class Volume(commands.Cog):
         volume_stats = await fetch_volume_data(collection_id)
 
         if volume_stats:
-            message = "**Volume Activity:**\n"
+            message = "**Sales Volume:**\n"
 
             def format_delta(delta):
-                return f"🔺{delta}%" if delta > 0 else (f"🔻{-delta}%" if delta < 0 else "🔲 0%")
+                return f" ⬆️ {delta}%" if delta > 0 else (f"🔻{-delta}%" if delta < 0 else " ~ 0%")
 
-            message += f"Past 1H": {await self.format_values(volume_stats['volumePast1h'])} SOL({format_delta(float(volume_stats['volumePast1hDelta']))})\n"
-            message += f"Past 24H: {await self.format_values(volume_stats['volumePast24h'])} SOL ({format_delta(float(volume_stats['volumePast24hDelta']))})\n"
-            message += f"Past 7D: {await self.format_values(volume_stats['volumePast7d'])} SOL  ({format_delta(float(volume_stats['volumePast7dDelta']))})\n"
-            message += f"Past 30D: {await self.format_values(volume_stats['volumePast30d'])} SOL / {await self.format_values(volume_stats['volumeUsdPast30d'])} USD ({format_delta(float(volume_stats['volumePast30dDelta']))})\n"
+            message += f"- Past 1H: {await self.format_values(volume_stats['volumePast1h'])} SOL ({format_delta(float(volume_stats['volumePast1hDelta']))} )\n"
+            message += f"- Past 24H: {await self.format_values(volume_stats['volumePast24h'])} SOL ({format_delta(float(volume_stats['volumePast24hDelta']))} )\n"
+            message += f"- Past 7D: {await self.format_values(volume_stats['volumePast7d'])} SOL ({format_delta(float(volume_stats['volumePast7dDelta']))} )\n"
+            message += f"- Past 30D: {await self.format_values(volume_stats['volumePast30d'])} SOL ({format_delta(float(volume_stats['volumePast30dDelta']))} )\n"
             await interaction.followup.send(message)
 
     async def format_values(self, value):
