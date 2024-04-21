@@ -13,8 +13,13 @@ collection_discord_config = {
             "volumePast7d",
             "salesPast7d",
             "totalOwners",
+            "loan",
+            "raffles",
+
             "SOL",
-            "TPS",
+            "TPS"
+
+
         ]
     },
     "CollectionID": "0e8e33630d554702a1619418269808b4",
@@ -152,7 +157,9 @@ statistic_channel_names = {
     "floorPriceDelta": "Floor change",
     "averagePriceDelta": "Average change",
     "SOL": "SOL",
-    "TPS": "TPS"
+    "TPS": "TPS",
+    "raffles": "Raffles",
+    "loan": "Best Loan"
 }
 
 

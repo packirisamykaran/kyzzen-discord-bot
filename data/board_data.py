@@ -4,6 +4,7 @@
 import requests
 from typing import Optional, Dict, Any
 import aiohttp
+import json
 
 
 GRAPHQL_ENDPOINT = "https://v8lkzf4yd2.execute-api.us-east-2.amazonaws.com/go-gql"
@@ -68,6 +69,11 @@ async def fetch_board_data(collection_id: str) -> Optional[Dict[str, Any]]:
 
         stats["TPS"] = result['data']['metrics']['nodes'][0]['tps']
         stats["SOL"] = result['data']['metrics']['nodes'][0]['solUSD']
+        stats["raffles"] = 0
+        # await fetch_loan_offers("Mad Lads")
+
+        laon_stats = await fetch_loan_offers("Mad Lads")
+        stats["loan"] = laon_stats['highest_offer']
 
         return stats
     except requests.HTTPError as http_err:
@@ -249,8 +255,52 @@ async def fetch_loan_offers(collection_name: str) -> Optional[Dict[str, Any]]:
                 highest_offer = loan['highestOffer']
                 highest_offer_loan = loan
 
-        return highest_offer_loan
+        id = highest_offer_loan['id']
+        print(highest_offer_loan['marketplace'])
+        print(highest_offer_loan['highestOffer'])
 
+        query2 = f"""
+           query {{
+               lendings(id: "{id}") {{
+                   nodes {{
+                       id
+                       offers
+                   }}
+               }}
+           }}
+       """
+
+        result2 = fetch_graphql(query2, "MyQuery")
+
+        offers_string = result2['data']['lendings']['nodes'][0]['offers']
+        # its in string dict
+        offers = json.loads(offers_string)
+
+        # {'Pubkey': 'DtmgnBCmXpNLqkygj1rP7jRMrCxXbgEXRCjKYZgNf4Vc', 'PrincipalLamports': 100000000, 'OrderBook': '14tngHvcSm4NySKmeDrM2G1bb9QBcVXCtpD9Vt5nKZ1Z', 'IsOffer': True, 'LoanTaken': 0, 'Apy': 18000, 'Apr': 12234, 'Duration': 604800}
+        # iterate throuhg the offers and get highest principal lamports
+        highest_loan = {}
+        for offer in offers:
+            if offer['PrincipalLamports'] > highest_loan.get('PrincipalLamports', 0):
+                highest_loan = offer
+
+        return_data = {
+
+        }
+
+        return_data['highest_offer'] = f"{highest_loan['PrincipalLamports']/1e9:.2f} SOL"
+        return_data['apy'] = f"{highest_loan['Apy']/100:.2f}% APY"
+        # over duration to days as whole number
+        return_data['duration'] = f"{highest_loan['Duration']/86400:.0f} Days"
+        return_data['marketplace'] = highest_offer_loan['marketplace']
+
+        if highest_offer_loan['marketplace'] == "Sharky":
+            return_data['link'] = "https://sharky.fi/borrow"
+        if highest_offer_loan['marketplace'] == "Citrus":
+            return_data['link'] = "https://citrus.famousfoxes.com/borrow"
+        if highest_offer_loan['marketplace'] == "Banx":
+            return_data['link'] = "https://banx.gg/borrow"
+
+        return return_data
     except requests.HTTPError as http_err:
         print(f"HTTP error occurred: {http_err}")
     except Exception as err:

@@ -46,6 +46,9 @@ class Raffles(commands.Cog):
                 raffle_to_display = raffle
                 break
 
+        if raffle_to_display["marketplace"] == "Sharky":
+            raffle_link = f"https://sharky.market/collection/{collection_id}"
+
         if raffle_to_display:
             message = f"**Ongoing Raffles:{len(raffle_stats)}**\n"
             message += f"Raffle 1: {raffle_to_display['name']}\n"
